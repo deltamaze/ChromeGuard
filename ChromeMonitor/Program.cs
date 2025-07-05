@@ -113,8 +113,16 @@ namespace ChromeMonitor
                 await LogMessage("No Chrome processes found");
             }
 
-            // Step 4: Reset hosts file (always done)
-            await ResetHostsFile();
+            // Step 4: Reset hosts file only if no active session
+            if (activeSession == null)
+            {
+                await LogMessage("No active session - resetting hosts file to blocked mode");
+                await ResetHostsFile();
+            }
+            else
+            {
+                await LogMessage("Active session found - leaving hosts file unchanged");
+            }
         }
 
         private static async Task<SessionInfo?> CheckForActiveSession()
