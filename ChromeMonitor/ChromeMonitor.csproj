@@ -8,6 +8,7 @@
     <UseWindowsForms>false</UseWindowsForms>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>false</SelfContained>
+    <ApplicationIcon>..\chromeguard.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

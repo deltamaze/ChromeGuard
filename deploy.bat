@@ -91,6 +91,9 @@ REM Copy documentation
 copy "%SOURCE_DIR%README.md" "%DEPLOY_DIR%\" /Y
 copy "%SOURCE_DIR%TASK_SCHEDULER_SETUP.md" "%DEPLOY_DIR%\" /Y
 
+REM Copy icon file
+copy "%SOURCE_DIR%chromeguard.ico" "%DEPLOY_DIR%\" /Y
+
 echo ========================================
 echo Creating configuration files...
 echo ========================================

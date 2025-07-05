@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="#2196F3" stroke="#1976D2" stroke-width="2"/>
+  
+  <!-- Shield shape -->
+  <path d="M32 8 L48 16 L48 32 Q48 48 32 56 Q16 48 16 32 L16 16 Z" fill="#FFF" opacity="0.9"/>
+  
+  <!-- Chrome-like circles in the shield -->
+  <circle cx="32" cy="28" r="8" fill="none" stroke="#2196F3" stroke-width="2"/>
+  <circle cx="26" cy="36" r="3" fill="#2196F3"/>
+  <circle cx="38" cy="36" r="3" fill="#2196F3"/>
+  <circle cx="32" cy="42" r="3" fill="#2196F3"/>
+  
+  <!-- Guard text -->
+  <text x="32" y="52" font-family="Arial, sans-serif" font-size="8" font-weight="bold" text-anchor="middle" fill="#1976D2">GUARD</text>
+</svg>
