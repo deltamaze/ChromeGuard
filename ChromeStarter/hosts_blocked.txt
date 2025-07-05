@@ -1,0 +1,159 @@
+# Copyright (c) 1993-2009 Microsoft Corp.
+#
+# This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
+#
+# This file contains the mappings of IP addresses to host names. Each
+# entry should be kept on an individual line. The IP address should
+# be placed in the first column followed by the corresponding host name.
+# The IP address and the host name should be separated by at least one
+# space.
+#
+# Additionally, comments (such as these) may be inserted on individual
+# lines or following the machine name denoted by a '#' symbol.
+#
+# For example:
+#
+#      102.54.94.97     rhino.acme.com          # source server
+#       38.25.63.10     x.acme.com              # x client host
+
+# localhost name resolution is handled within DNS itself.
+#	127.0.0.1       localhost
+#	::1             localhost
+
+	127.0.0.1       reddit.com
+	127.0.0.1       www.reddit.com
+	127.0.0.1       cnn.com
+	127.0.0.1       www.cnn.com
+	127.0.0.1       facebook.com
+	127.0.0.1       www.facebook.com
+	127.0.0.1       instagram.com
+	127.0.0.1       www.instagram.com
+	127.0.0.1       youtube.com
+	127.0.0.1       www.youtube.com
+	127.0.0.1		cnn.com
+	127.0.0.1		www.cnn.com
+	127.0.0.1		abcnews.go.com
+	127.0.0.1		www.abcnews.go.com
+	127.0.0.1		foxnews.com
+	127.0.0.1		www.foxnews.com
+	127.0.0.1		bbc.com
+	127.0.0.1		www.bbc.com
+	127.0.0.1		bbc.co.uk
+	127.0.0.1		www.bbc.co.uk
+	127.0.0.1		nytimes.com
+	127.0.0.1		www.nytimes.com
+	127.0.0.1		washingtonpost.com
+	127.0.0.1		www.washingtonpost.com
+	127.0.0.1		reuters.com
+	127.0.0.1		www.reuters.com
+	127.0.0.1		apnews.com
+	127.0.0.1		www.apnews.com
+	127.0.0.1		usatoday.com
+	127.0.0.1		www.usatoday.com
+	127.0.0.1		theguardian.com
+	127.0.0.1		www.theguardian.com
+	127.0.0.1		wsj.com
+	127.0.0.1		www.wsj.com
+	127.0.0.1		nbcnews.com
+	127.0.0.1		www.nbcnews.com
+	127.0.0.1		cbsnews.com
+	127.0.0.1		www.cbsnews.com
+	127.0.0.1		politico.com
+	127.0.0.1		www.politico.com
+	127.0.0.1		axios.com
+	127.0.0.1		www.axios.com
+	127.0.0.1		bloomberg.com
+	127.0.0.1		www.bloomberg.com
+	127.0.0.1		huffpost.com
+	127.0.0.1		www.huffpost.com
+	127.0.0.1		buzzfeednews.com
+	127.0.0.1		www.buzzfeednews.com
+	127.0.0.1		breitbart.com
+	127.0.0.1		www.breitbart.com
+	127.0.0.1		drudgereport.com
+	127.0.0.1		www.drudgereport.com
+	127.0.0.1		thehill.com
+	127.0.0.1		www.thehill.com
+	127.0.0.1		theatlantic.com
+	127.0.0.1		www.theatlantic.com
+	127.0.0.1		vox.com
+	127.0.0.1		www.vox.com
+	127.0.0.1		slate.com
+	127.0.0.1		www.slate.com
+	127.0.0.1		salon.com
+	127.0.0.1		www.salon.com
+	127.0.0.1		npr.org
+	127.0.0.1		www.npr.org
+	127.0.0.1		thedailybeast.com
+	127.0.0.1		www.thedailybeast.com
+	127.0.0.1		vice.com
+	127.0.0.1		www.vice.com
+	127.0.0.1		mashable.com
+	127.0.0.1		www.mashable.com
+	127.0.0.1		time.com
+	127.0.0.1		www.time.com
+	127.0.0.1		newsweek.com
+	127.0.0.1		www.newsweek.com
+	127.0.0.1		theverge.com
+	127.0.0.1		www.theverge.com
+
+	127.0.0.1		techcrunch.com
+	127.0.0.1		www.techcrunch.com
+	127.0.0.1		engadget.com
+	127.0.0.1		www.engadget.com
+	127.0.0.1		arstechnica.com
+	127.0.0.1		www.arstechnica.com
+	127.0.0.1		gizmodo.com
+	127.0.0.1		www.gizmodo.com
+	127.0.0.1		cnet.com
+	127.0.0.1		www.cnet.com
+	127.0.0.1		zdnet.com
+	127.0.0.1		www.zdnet.com
+	127.0.0.1		tomshardware.com
+	127.0.0.1		www.tomshardware.com
+	127.0.0.1		anandtech.com
+	127.0.0.1		www.anandtech.com
+	127.0.0.1		bleepingcomputer.com
+	127.0.0.1		www.bleepingcomputer.com
+	127.0.0.1		wired.com
+	127.0.0.1		www.wired.com
+	127.0.0.1		techradar.com
+	127.0.0.1		www.techradar.com
+	127.0.0.1		thenextweb.com
+	127.0.0.1		www.thenextweb.com
+	127.0.0.1		digitaltrends.com
+	127.0.0.1		www.digitaltrends.com
+			 		
+	127.0.0.1		ign.com
+	127.0.0.1		www.ign.com
+	127.0.0.1		gamespot.com
+	127.0.0.1		www.gamespot.com
+	127.0.0.1		pcgamer.com
+	127.0.0.1		www.pcgamer.com
+	127.0.0.1		polygon.com
+	127.0.0.1		www.polygon.com
+	127.0.0.1		kotaku.com
+	127.0.0.1		www.kotaku.com
+	127.0.0.1		eurogamer.net
+	127.0.0.1		www.eurogamer.net
+	127.0.0.1		destructoid.com
+	127.0.0.1		www.destructoid.com
+	127.0.0.1		rockpapershotgun.com
+	127.0.0.1		www.rockpapershotgun.com
+	127.0.0.1		nintendolife.com
+	127.0.0.1		www.nintendolife.com
+	127.0.0.1		pushsquare.com
+	127.0.0.1		www.pushsquare.com
+	127.0.0.1		xboxera.com
+	127.0.0.1		www.xboxera.com
+	127.0.0.1		gamesradar.com
+	127.0.0.1		www.gamesradar.com
+	127.0.0.1		dualshockers.com
+	127.0.0.1		www.dualshockers.com
+	127.0.0.1		gamerevolution.com
+	127.0.0.1		www.gamerevolution.com
+	127.0.0.1		siliconera.com
+	127.0.0.1		www.siliconera.com
+	127.0.0.1		guessthe.game
+	127.0.0.1		news.google.com
+	127.0.0.1		framed.wtf
