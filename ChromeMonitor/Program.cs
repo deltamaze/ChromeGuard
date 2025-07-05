@@ -1,11 +1,21 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 
 namespace ChromeMonitor
 {
     class Program
     {
+        // P/Invoke declarations for Windows MessageBox
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern int MessageBox(IntPtr hWnd, string lpText, string lpCaption, uint uType);
+
+        // MessageBox constants
+        private const uint MB_OK = 0x00000000;
+        private const uint MB_ICONWARNING = 0x00000030;
+        private const uint MB_TOPMOST = 0x00040000;
+        private const uint MB_SYSTEMMODAL = 0x00001000;
         private static IConfiguration? _configuration;
         private static string _sessionLogPath = "";
         private static string _systemHostsPath = "";
@@ -238,21 +248,26 @@ namespace ChromeMonitor
         {
             try
             {
-                // Use native Windows MessageBox for "always on top" behavior
-                var message = "Chrome will shut down in 1 minute. Re-run ChromeStarter.exe to extend your session if needed.";
+                var message = "Chrome will shut down in 1 minute.\n\nRe-run ChromeStarter.exe to extend your session if needed.";
                 var title = "ChromeGuard Warning";
                 
-                // Show warning via command line (since we need to stay cross-platform compatible)
-                // In a real implementation, you might want to use P/Invoke to call MessageBox Win32 API
-                Console.WriteLine($"WARNING MESSAGE: {message}");
-                Console.WriteLine($"Title: {title}");
+                // Use native Windows MessageBox with TopMost and SystemModal flags
+                // This ensures the message appears even when running as a background service
+                uint flags = MB_OK | MB_ICONWARNING | MB_TOPMOST | MB_SYSTEMMODAL;
                 
-                // For now, we'll use a simple console message
-                // TODO: Implement proper Windows MessageBox with TopMost flag
+                Console.WriteLine($"Displaying warning message box: {title}");
+                Console.WriteLine($"Message: {message}");
+                
+                // Show the message box - this will appear even if the console is hidden
+                int result = MessageBox(IntPtr.Zero, message, title, flags);
+                
+                Console.WriteLine("Warning message box displayed successfully");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error showing warning message: {ex.Message}");
+                // Fallback to console output
+                Console.WriteLine("FALLBACK WARNING: Chrome will shut down in 1 minute!");
             }
         }
 
