@@ -114,7 +114,7 @@ namespace ChromeStarter
       }
 
       // Get session duration
-      Console.Write("How many minutes do you need Chrome? ");
+      Console.Write("How many minutes do you need Chrome? (max 15): ");
       var durationInput = Console.ReadLine();
       int duration;
       while (!int.TryParse(durationInput, out duration) || duration <= 0)
@@ -122,6 +122,14 @@ namespace ChromeStarter
         Console.Write("Invalid input. Please enter a positive number: ");
         durationInput = Console.ReadLine();
       }
+      
+      // Cap duration at 15 minutes
+      if (duration > 15)
+      {
+        Console.WriteLine($"Duration capped at 15 minutes (requested: {duration} minutes)");
+        duration = 15;
+      }
+      
       config.DurationMinutes = duration;
 
       // Get reason for use
