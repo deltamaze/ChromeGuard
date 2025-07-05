@@ -22,38 +22,92 @@ namespace ChromeMonitor
         private static string _blockedHostsTemplatePath = "";
         private static int _warningTimeoutSeconds = 55;
         private static string _chromeProcessName = "chrome";
+        private static string _logFilePath = "";
 
         static async Task Main(string[] args)
         {
             try
             {
-                Console.WriteLine($"ChromeMonitor - Started at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                // Initialize logging first
+                _logFilePath = Path.Combine(Directory.GetCurrentDirectory(), "ChromeMonitor.log");
+                
+                await LogMessage($"ChromeMonitor - Started at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                 
                 // Load configuration
-                LoadConfiguration();
+                await LoadConfiguration();
 
                 // Check if running as administrator
                 if (!IsRunAsAdministrator())
                 {
-                    Console.WriteLine("ERROR: Not running as administrator!");
-                    Console.WriteLine("ChromeMonitor requires administrator privileges to modify hosts file and manage processes.");
+                    await LogMessage("ERROR: Not running as administrator!");
+                    await LogMessage("ChromeMonitor requires administrator privileges to modify hosts file and manage processes.");
                     Environment.Exit(1);
                 }
 
                 // Main monitoring logic
                 await PerformMonitoringCycle();
                 
-                Console.WriteLine($"ChromeMonitor - Completed at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                await LogMessage($"ChromeMonitor - Completed at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"FATAL ERROR: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                await LogMessage($"FATAL ERROR: {ex.Message}");
+                await LogMessage($"Stack trace: {ex.StackTrace}");
                 Environment.Exit(1);
             }
         }
 
-        private static void LoadConfiguration()
+        private static async Task LogMessage(string message)
+        {
+            try
+            {
+                var logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}";
+                
+                // Always write to log file
+                await File.AppendAllTextAsync(_logFilePath, logEntry + Environment.NewLine);
+                
+                // Also write to console if available (for debugging when run manually)
+                try
+                {
+                    Console.WriteLine(logEntry);
+                }
+                catch
+                {
+                    // Console might not be available in Windows application mode
+                }
+            }
+            catch
+            {
+                // If logging fails, we can't do much about it in a headless app
+            }
+        }
+
+        private static void LogMessageSync(string message)
+        {
+            try
+            {
+                var logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}";
+                
+                // Write to log file synchronously
+                File.AppendAllText(_logFilePath, logEntry + Environment.NewLine);
+                
+                // Also write to console if available
+                try
+                {
+                    Console.WriteLine(logEntry);
+                }
+                catch
+                {
+                    // Console might not be available
+                }
+            }
+            catch
+            {
+                // If logging fails, we can't do much about it
+            }
+        }
+
+        private static async Task LoadConfiguration()
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -68,7 +122,7 @@ namespace ChromeMonitor
             _warningTimeoutSeconds = int.Parse(_configuration["AppSettings:WarningTimeoutSeconds"] ?? "55");
             _chromeProcessName = _configuration["AppSettings:ChromeProcessName"] ?? "chrome";
 
-            Console.WriteLine("Configuration loaded successfully.");
+            await LogMessage("Configuration loaded successfully.");
         }
 
         private static bool IsRunAsAdministrator()
@@ -80,82 +134,82 @@ namespace ChromeMonitor
 
         private static async Task PerformMonitoringCycle()
         {
-            Console.WriteLine("Starting monitoring cycle...");
+            await LogMessage("Starting monitoring cycle...");
 
             // Step 1: Check for active session
-            var activeSession = CheckForActiveSession();
-            Console.WriteLine($"Active session check: {(activeSession != null ? "Found valid session" : "No valid session")}");
+            var activeSession = await CheckForActiveSession();
+            await LogMessage($"Active session check: {(activeSession != null ? "Found valid session" : "No valid session")}");
 
             // Step 2: Check for Chrome processes
             var chromeProcesses = GetChromeProcesses();
-            Console.WriteLine($"Chrome processes found: {chromeProcesses.Length}");
+            await LogMessage($"Chrome processes found: {chromeProcesses.Length}");
 
             // Step 3: Handle Chrome closure if needed
             if (chromeProcesses.Length > 0 && activeSession == null)
             {
-                Console.WriteLine("Chrome is running without valid session - initiating warning and closure sequence");
+                await LogMessage("Chrome is running without valid session - initiating warning and closure sequence");
                 await HandleChromeWarningAndClosure(chromeProcesses);
             }
             else if (chromeProcesses.Length > 0 && activeSession != null)
             {
-                Console.WriteLine($"Chrome is running with valid session (expires at {activeSession.EndTime:HH:mm:ss})");
+                await LogMessage($"Chrome is running with valid session (expires at {activeSession.EndTime:HH:mm:ss})");
             }
             else
             {
-                Console.WriteLine("No Chrome processes found");
+                await LogMessage("No Chrome processes found");
             }
 
             // Step 4: Reset hosts file (always done)
             await ResetHostsFile();
         }
 
-        private static SessionInfo? CheckForActiveSession()
+        private static async Task<SessionInfo?> CheckForActiveSession()
         {
             try
             {
                 if (!File.Exists(_sessionLogPath))
                 {
-                    Console.WriteLine("Session log file does not exist");
+                    await LogMessage("Session log file does not exist");
                     return null;
                 }
 
-                var lines = File.ReadAllLines(_sessionLogPath);
+                var lines = await File.ReadAllLinesAsync(_sessionLogPath);
                 if (lines.Length == 0)
                 {
-                    Console.WriteLine("Session log file is empty");
+                    await LogMessage("Session log file is empty");
                     return null;
                 }
 
                 // Get the most recent session (last line)
                 var lastLine = lines[^1];
-                var session = ParseSessionLine(lastLine);
+                var session = await ParseSessionLine(lastLine);
                 
                 if (session == null)
                 {
-                    Console.WriteLine("Failed to parse most recent session");
+                    await LogMessage("Failed to parse most recent session");
                     return null;
                 }
 
                 // Check if session is still active
                 if (DateTime.Now <= session.EndTime)
                 {
-                    Console.WriteLine($"Found active session: {session.Mode}, expires at {session.EndTime:HH:mm:ss}, reason: {session.Reason}");
+                    await LogMessage($"Found active session: {session.Mode}, expires at {session.EndTime:HH:mm:ss}, reason: {session.Reason}");
                     return session;
                 }
                 else
                 {
-                    Console.WriteLine($"Most recent session expired at {session.EndTime:HH:mm:ss}");
+                    await LogMessage($"Most recent session expired at {session.EndTime:HH:mm:ss}");
                     return null;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error checking for active session: {ex.Message}");
+                await LogMessage($"Error checking for active session: {ex.Message}");
                 return null;
             }
         }
 
-        private static SessionInfo? ParseSessionLine(string line)
+        private static async Task<SessionInfo?> ParseSessionLine(string line)
         {
             try
             {
@@ -164,7 +218,7 @@ namespace ChromeMonitor
                 
                 if (parts.Length != 5)
                 {
-                    Console.WriteLine($"Invalid session line format: {line}");
+                    await LogMessage($"Invalid session line format: {line}");
                     return null;
                 }
 
@@ -194,7 +248,7 @@ namespace ChromeMonitor
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error parsing session line '{line}': {ex.Message}");
+                await LogMessage($"Error parsing session line '{line}': {ex.Message}");
                 return null;
             }
         }

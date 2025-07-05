@@ -67,9 +67,8 @@ Write-Host ""
 
 try {
     # Create the action (what the task will do)
-    # Add logging parameters to capture console output
-    $arguments = "> `"$ChromeGuardPath\ChromeMonitor.log`" 2>&1"
-    $action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c `"$chromeMonitorPath`" $arguments" -WorkingDirectory $ChromeGuardPath
+    # Run the exe directly since it's now a WinExe (no console window)
+    $action = New-ScheduledTaskAction -Execute $chromeMonitorPath -WorkingDirectory $ChromeGuardPath
 
     # Create the trigger (when the task will run)
     # Fix: Use a more reasonable duration instead of MaxValue
@@ -98,7 +97,7 @@ try {
     Write-Host "Next Run Time: $((Get-ScheduledTask -TaskName $taskName | Get-ScheduledTaskInfo).NextRunTime)" -ForegroundColor White
     Write-Host "Run As: $currentUser (Administrator)" -ForegroundColor White
     Write-Host "Frequency: Every 3 minutes" -ForegroundColor White
-    Write-Host "Hidden: Yes" -ForegroundColor White
+    Write-Host "Hidden: Yes (No console window)" -ForegroundColor White
     Write-Host "Log File: $ChromeGuardPath\ChromeMonitor.log" -ForegroundColor White
     Write-Host ""
     
