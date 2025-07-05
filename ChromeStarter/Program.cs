@@ -86,21 +86,32 @@ namespace ChromeStarter
     {
       var config = new SessionConfiguration();
 
-      // Get host file configuration
-      Console.WriteLine("Unblock Distracting Pages?");
-      Console.WriteLine("Y - Unlock All pages (no blocks)");
-      Console.WriteLine("N - Limited pages (with blocks)");
-      Console.Write("Choose mode (Y/N): ");
-
-      var modeInput = Console.ReadLine()?.ToUpper();
-      while (modeInput != "Y" && modeInput != "N")
+      // Only ask about host file configuration if running as administrator
+      if (IsRunAsAdministrator())
       {
-        Console.Write("Invalid input. Please enter Y or N: ");
-        modeInput = Console.ReadLine()?.ToUpper();
-      }
+        // Get host file configuration
+        Console.WriteLine("Unblock Distracting Pages?");
+        Console.WriteLine("Y - Unlock All pages (no blocks)");
+        Console.WriteLine("N - Limited pages (with blocks)");
+        Console.Write("Choose mode (Y/N): ");
 
-      config.AllowAllPages = modeInput == "Y";
-      config.Mode = config.AllowAllPages ? "ALL" : "LIMITED";
+        var modeInput = Console.ReadLine()?.ToUpper();
+        while (modeInput != "Y" && modeInput != "N")
+        {
+          Console.Write("Invalid input. Please enter Y or N: ");
+          modeInput = Console.ReadLine()?.ToUpper();
+        }
+
+        config.AllowAllPages = modeInput == "Y";
+        config.Mode = config.AllowAllPages ? "ALL" : "LIMITED";
+      }
+      else
+      {
+        // Not running as admin - default to LIMITED mode (no hosts file changes)
+        config.AllowAllPages = false;
+        config.Mode = "LIMITED";
+        Console.WriteLine("Running in LIMITED mode (hosts file will not be modified - requires admin privileges)");
+      }
 
       // Get session duration
       Console.Write("How many minutes do you need Chrome? ");
