@@ -63,22 +63,13 @@ namespace ChromeMonitor
             {
                 var logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}";
                 
-                // Always write to log file
+                // Write to log file only - no console output for headless operation
                 await File.AppendAllTextAsync(_logFilePath, logEntry + Environment.NewLine);
-                
-                // Also write to console if available (for debugging when run manually)
-                try
-                {
-                    Console.WriteLine(logEntry);
-                }
-                catch
-                {
-                    // Console might not be available in Windows application mode
-                }
             }
             catch
             {
                 // If logging fails, we can't do much about it in a headless app
+                // Just silently continue to avoid any potential console window appearance
             }
         }
 
