@@ -9,7 +9,6 @@ namespace ChromeMonitor
         private static IConfiguration? _configuration;
         private static string _sessionLogPath = "";
         private static string _systemHostsPath = "";
-        private static string _cleanHostsTemplatePath = "";
         private static string _blockedHostsTemplatePath = "";
         private static int _warningTimeoutSeconds = 55;
         private static string _chromeProcessName = "chrome";
@@ -54,7 +53,7 @@ namespace ChromeMonitor
 
             _sessionLogPath = _configuration["AppSettings:SessionLogPath"] ?? "";
             _systemHostsPath = _configuration["AppSettings:SystemHostsPath"] ?? "";
-            _cleanHostsTemplatePath = _configuration["AppSettings:CleanHostsTemplatePath"] ?? "";
+            
             _blockedHostsTemplatePath = _configuration["AppSettings:BlockedHostsTemplatePath"] ?? "";
             _warningTimeoutSeconds = int.Parse(_configuration["AppSettings:WarningTimeoutSeconds"] ?? "55");
             _chromeProcessName = _configuration["AppSettings:ChromeProcessName"] ?? "chrome";

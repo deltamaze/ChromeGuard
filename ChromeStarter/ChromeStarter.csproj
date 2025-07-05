@@ -15,9 +15,6 @@
     <None Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="hosts_blocked.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="hosts_clean.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
