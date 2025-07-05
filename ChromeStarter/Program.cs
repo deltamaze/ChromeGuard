@@ -19,6 +19,9 @@ namespace ChromeStarter
       // Load configuration
       LoadConfiguration();
 
+      // Check for active sessions first
+      await CheckAndDisplayActiveSession();
+
       // Check if running as administrator
       if (!IsRunAsAdministrator())
       {
@@ -87,6 +90,107 @@ namespace ChromeStarter
       var identity = WindowsIdentity.GetCurrent();
       var principal = new WindowsPrincipal(identity);
       return principal.IsInRole(WindowsBuiltInRole.Administrator);
+    }
+
+    private static async Task CheckAndDisplayActiveSession()
+    {
+      try
+      {
+        if (!File.Exists(_sessionLogPath))
+        {
+          Console.WriteLine("No session history found.");
+          Console.WriteLine();
+          return;
+        }
+
+        var lines = await File.ReadAllLinesAsync(_sessionLogPath);
+        if (lines.Length == 0)
+        {
+          Console.WriteLine("No session history found.");
+          Console.WriteLine();
+          return;
+        }
+
+        // Get the most recent session (last line)
+        var lastLine = lines[^1];
+        var session = ParseSessionLine(lastLine);
+        
+        if (session == null)
+        {
+          Console.WriteLine("Unable to parse most recent session.");
+          Console.WriteLine();
+          return;
+        }
+
+        // Check if session is still active
+        if (DateTime.Now <= session.EndTime)
+        {
+          var remainingTime = session.EndTime - DateTime.Now;
+          var remainingMinutes = (int)Math.Ceiling(remainingTime.TotalMinutes);
+          
+          Console.WriteLine($"ACTIVE SESSION FOUND:");
+          Console.WriteLine($"  Mode: {session.Mode}");
+          Console.WriteLine($"  Started: {session.StartTime:HH:mm:ss}");
+          Console.WriteLine($"  Expires: {session.EndTime:HH:mm:ss}");
+          Console.WriteLine($"  Remaining: {remainingMinutes} minute(s)");
+          Console.WriteLine($"  Reason: {session.Reason}");
+          Console.WriteLine();
+        }
+        else
+        {
+          var expiredMinutes = (int)Math.Floor((DateTime.Now - session.EndTime).TotalMinutes);
+          Console.WriteLine($"Last session expired {expiredMinutes} minute(s) ago at {session.EndTime:HH:mm:ss}");
+          Console.WriteLine();
+        }
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"Error checking for active session: {ex.Message}");
+        Console.WriteLine();
+      }
+    }
+
+    private static SessionConfiguration? ParseSessionLine(string line)
+    {
+      try
+      {
+        // Expected format: YYYY-MM-DD HH:MM:SS | ALL/LIMITED | DURATION_MINUTES | END_TIME_HH:MM:SS | REASON
+        var parts = line.Split('|').Select(p => p.Trim()).ToArray();
+        
+        if (parts.Length != 5)
+        {
+          return null;
+        }
+
+        var startTime = DateTime.Parse(parts[0]);
+        var mode = parts[1];
+        var durationMinutes = int.Parse(parts[2]);
+        var endTimeStr = parts[3];
+        var reason = parts[4];
+
+        // Parse end time - it's in HH:mm:ss format, so combine with start date
+        var endTime = DateTime.Parse($"{startTime:yyyy-MM-dd} {endTimeStr}");
+        
+        // Handle case where end time is next day
+        if (endTime < startTime)
+        {
+          endTime = endTime.AddDays(1);
+        }
+
+        return new SessionConfiguration
+        {
+          StartTime = startTime,
+          EndTime = endTime,
+          Mode = mode,
+          DurationMinutes = durationMinutes,
+          Reason = reason,
+          AllowAllPages = mode == "ALL"
+        };
+      }
+      catch
+      {
+        return null;
+      }
     }
 
     private static SessionConfiguration GetSessionConfiguration()
