@@ -82,31 +82,6 @@ namespace ChromeMonitor
             }
         }
 
-        private static void LogMessageSync(string message)
-        {
-            try
-            {
-                var logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}";
-                
-                // Write to log file synchronously
-                File.AppendAllText(_logFilePath, logEntry + Environment.NewLine);
-                
-                // Also write to console if available
-                try
-                {
-                    Console.WriteLine(logEntry);
-                }
-                catch
-                {
-                    // Console might not be available
-                }
-            }
-            catch
-            {
-                // If logging fails, we can't do much about it
-            }
-        }
-
         private static async Task LoadConfiguration()
         {
             var builder = new ConfigurationBuilder()
@@ -141,7 +116,7 @@ namespace ChromeMonitor
             await LogMessage($"Active session check: {(activeSession != null ? "Found valid session" : "No valid session")}");
 
             // Step 2: Check for Chrome processes
-            var chromeProcesses = GetChromeProcesses();
+            var chromeProcesses = await GetChromeProcesses();
             await LogMessage($"Chrome processes found: {chromeProcesses.Length}");
 
             // Step 3: Handle Chrome closure if needed
@@ -253,7 +228,7 @@ namespace ChromeMonitor
             }
         }
 
-        private static Process[] GetChromeProcesses()
+        private static async Task<Process[]> GetChromeProcesses()
         {
             try
             {
@@ -261,7 +236,7 @@ namespace ChromeMonitor
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting Chrome processes: {ex.Message}");
+                await LogMessage($"Error getting Chrome processes: {ex.Message}");
                 return Array.Empty<Process>();
             }
         }
@@ -271,34 +246,34 @@ namespace ChromeMonitor
             try
             {
                 // Display warning message box
-                Console.WriteLine("Displaying warning message to user...");
-                ShowWarningMessageBox();
+                await LogMessage("Displaying warning message to user...");
+                await ShowWarningMessageBox();
 
                 // Wait for the configured timeout period
-                Console.WriteLine($"Waiting {_warningTimeoutSeconds} seconds for user response...");
+                await LogMessage($"Waiting {_warningTimeoutSeconds} seconds for user response...");
                 await Task.Delay(_warningTimeoutSeconds * 1000);
 
                 // Re-check for active session after timeout
-                Console.WriteLine("Re-checking for active session after warning period...");
-                var activeSession = CheckForActiveSession();
+                await LogMessage("Re-checking for active session after warning period...");
+                var activeSession = await CheckForActiveSession();
 
                 if (activeSession == null)
                 {
-                    Console.WriteLine("No valid session found after warning period - closing Chrome processes");
-                    CloseChromeProcesses();
+                    await LogMessage("No valid session found after warning period - closing Chrome processes");
+                    await CloseChromeProcesses();
                 }
                 else
                 {
-                    Console.WriteLine("Valid session found after warning period - Chrome will continue running");
+                    await LogMessage("Valid session found after warning period - Chrome will continue running");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in warning and closure sequence: {ex.Message}");
+                await LogMessage($"Error in warning and closure sequence: {ex.Message}");
             }
         }
 
-        private static void ShowWarningMessageBox()
+        private static async Task ShowWarningMessageBox()
         {
             try
             {
@@ -309,48 +284,48 @@ namespace ChromeMonitor
                 // This ensures the message appears even when running as a background service
                 uint flags = MB_OK | MB_ICONWARNING | MB_TOPMOST | MB_SYSTEMMODAL;
                 
-                Console.WriteLine($"Displaying warning message box: {title}");
-                Console.WriteLine($"Message: {message}");
+                await LogMessage($"Displaying warning message box: {title}");
+                await LogMessage($"Message: {message}");
                 
                 // Show the message box - this will appear even if the console is hidden
                 int result = MessageBox(IntPtr.Zero, message, title, flags);
                 
-                Console.WriteLine("Warning message box displayed successfully");
+                await LogMessage("Warning message box displayed successfully");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error showing warning message: {ex.Message}");
-                // Fallback to console output
-                Console.WriteLine("FALLBACK WARNING: Chrome will shut down in 1 minute!");
+                await LogMessage($"Error showing warning message: {ex.Message}");
+                // Fallback to log output
+                await LogMessage("FALLBACK WARNING: Chrome will shut down in 1 minute!");
             }
         }
 
-        private static void CloseChromeProcesses()
+        private static async Task CloseChromeProcesses()
         {
             try
             {
-                var processes = GetChromeProcesses();
-                Console.WriteLine($"Attempting to close {processes.Length} Chrome process(es)");
+                var processes = await GetChromeProcesses();
+                await LogMessage($"Attempting to close {processes.Length} Chrome process(es)");
 
                 foreach (var process in processes)
                 {
                     try
                     {
-                        Console.WriteLine($"Closing Chrome process ID: {process.Id}");
+                        await LogMessage($"Closing Chrome process ID: {process.Id}");
                         process.CloseMainWindow();
                         
                         // Give process time to close gracefully
                         if (!process.WaitForExit(5000))
                         {
-                            Console.WriteLine($"Process {process.Id} did not close gracefully, forcing termination");
+                            await LogMessage($"Process {process.Id} did not close gracefully, forcing termination");
                             process.Kill();
                         }
                         
-                        Console.WriteLine($"Chrome process {process.Id} closed successfully");
+                        await LogMessage($"Chrome process {process.Id} closed successfully");
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error closing Chrome process {process.Id}: {ex.Message}");
+                        await LogMessage($"Error closing Chrome process {process.Id}: {ex.Message}");
                     }
                     finally
                     {
@@ -360,7 +335,7 @@ namespace ChromeMonitor
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error closing Chrome processes: {ex.Message}");
+                await LogMessage($"Error closing Chrome processes: {ex.Message}");
             }
         }
 
@@ -368,11 +343,11 @@ namespace ChromeMonitor
         {
             try
             {
-                Console.WriteLine("Resetting hosts file to blocked mode...");
+                await LogMessage("Resetting hosts file to blocked mode...");
                 
                 if (!File.Exists(_blockedHostsTemplatePath))
                 {
-                    Console.WriteLine($"ERROR: Blocked hosts template not found: {_blockedHostsTemplatePath}");
+                    await LogMessage($"ERROR: Blocked hosts template not found: {_blockedHostsTemplatePath}");
                     return;
                 }
 
@@ -382,11 +357,11 @@ namespace ChromeMonitor
                 // Write to system hosts file
                 await File.WriteAllTextAsync(_systemHostsPath, hostsContent);
                 
-                Console.WriteLine("Hosts file reset to blocked mode successfully");
+                await LogMessage("Hosts file reset to blocked mode successfully");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error resetting hosts file: {ex.Message}");
+                await LogMessage($"Error resetting hosts file: {ex.Message}");
             }
         }
     }
