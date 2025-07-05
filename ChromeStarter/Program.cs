@@ -31,7 +31,7 @@ namespace ChromeStarter
       try
       {
         // Get user input for session configuration
-        var sessionConfig = await GetSessionConfiguration();
+        var sessionConfig = GetSessionConfiguration();
 
         // Update hosts file based on user choice
         if (sessionConfig.AllowAllPages) await UpdateHostsFile();
@@ -39,11 +39,18 @@ namespace ChromeStarter
         // Log the session
         await LogSession(sessionConfig);
 
-        // Launch Chrome
+        // Launch Chrome (only if not already running)
         LaunchChrome();
 
         Console.WriteLine();
-        Console.WriteLine("Chrome session started successfully!");
+        if (IsChromeRunning())
+        {
+          Console.WriteLine("Chrome session configured successfully!");
+        }
+        else
+        {
+          Console.WriteLine("Chrome session started successfully!");
+        }
         Console.WriteLine($"Session will expire at: {sessionConfig.EndTime:HH:mm:ss}");
         // wait 10 seconds before exiting
         await Task.Delay(10000);
@@ -82,7 +89,7 @@ namespace ChromeStarter
       return principal.IsInRole(WindowsBuiltInRole.Administrator);
     }
 
-    private static async Task<SessionConfiguration> GetSessionConfiguration()
+    private static SessionConfiguration GetSessionConfiguration()
     {
       var config = new SessionConfiguration();
 
@@ -196,10 +203,30 @@ namespace ChromeStarter
       }
     }
 
+    private static bool IsChromeRunning()
+    {
+      try
+      {
+        var chromeProcesses = Process.GetProcessesByName("chrome");
+        return chromeProcesses.Length > 0;
+      }
+      catch
+      {
+        return false;
+      }
+    }
+
     private static void LaunchChrome()
     {
       try
       {
+        // Check if Chrome is already running
+        if (IsChromeRunning())
+        {
+          Console.WriteLine("Chrome is already running - session extended without launching new instance.");
+          return;
+        }
+
         // Try common Chrome installation paths
         string[] chromePaths = {
                     @"C:\Program Files\Google\Chrome\Application\chrome.exe",
