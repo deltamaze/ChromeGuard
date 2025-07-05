@@ -67,36 +67,26 @@ Write-Host ""
 
 try {
     # Create the action (what the task will do)
-    $action = New-ScheduledTaskAction -Execute $chromeMonitorPath -WorkingDirectory $ChromeGuardPath
+    # Add logging parameters to capture console output
+    $arguments = "> `"$ChromeGuardPath\ChromeMonitor.log`" 2>&1"
+    $action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c `"$chromeMonitorPath`" $arguments" -WorkingDirectory $ChromeGuardPath
 
     # Create the trigger (when the task will run)
-    $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 3) -RepetitionDuration ([TimeSpan]::MaxValue)
+    # Fix: Use a more reasonable duration instead of MaxValue
+    $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 3) -RepetitionDuration (New-TimeSpan -Days 3650)
 
     # Create task settings
-    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RunOnlyIfNetworkAvailable:$false -DontStopOnIdleEnd -ExecutionTimeLimit (New-TimeSpan -Minutes 2) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
+    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RunOnlyIfNetworkAvailable:$false -DontStopOnIdleEnd -ExecutionTimeLimit (New-TimeSpan -Minutes 2) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -Hidden
 
-    # Set the task to run with highest privileges (as Administrator)
-    $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+    # Set the task to run with highest privileges but under current user (not SYSTEM)
+    # This allows interaction with user session (seeing Chrome processes, showing message boxes)
+    $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+    $principal = New-ScheduledTaskPrincipal -UserId $currentUser -LogonType Interactive -RunLevel Highest
 
     # Register the scheduled task
     $task = Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Description $taskDescription
 
     Write-Host "SUCCESS: Scheduled task created successfully!" -ForegroundColor Green
-    Write-Host ""
-    
-    # Configure additional properties that can't be set during creation
-    Write-Host "Configuring advanced task properties..." -ForegroundColor Cyan
-    
-    # Get the task definition to modify advanced settings
-    $taskDefinition = Get-ScheduledTask -TaskName $taskName
-    
-    # Set the task to run hidden (no console window)
-    $taskDefinition.Settings.Hidden = $true
-    
-    # Update the task with the new settings
-    Set-ScheduledTask -InputObject $taskDefinition | Out-Null
-    
-    Write-Host "Advanced properties configured." -ForegroundColor Green
     Write-Host ""
     
     # Display task information
@@ -106,9 +96,10 @@ try {
     Write-Host "Task Name: $($task.TaskName)" -ForegroundColor White
     Write-Host "State: $($task.State)" -ForegroundColor White
     Write-Host "Next Run Time: $((Get-ScheduledTask -TaskName $taskName | Get-ScheduledTaskInfo).NextRunTime)" -ForegroundColor White
-    Write-Host "Run As: SYSTEM (Administrator)" -ForegroundColor White
+    Write-Host "Run As: $currentUser (Administrator)" -ForegroundColor White
     Write-Host "Frequency: Every 3 minutes" -ForegroundColor White
     Write-Host "Hidden: Yes" -ForegroundColor White
+    Write-Host "Log File: $ChromeGuardPath\ChromeMonitor.log" -ForegroundColor White
     Write-Host ""
     
     Write-Host "========================================" -ForegroundColor Cyan
@@ -140,6 +131,10 @@ try {
     Write-Host "========================================" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "ChromeGuard is now monitoring Chrome every 3 minutes." -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Console Output:" -ForegroundColor Cyan
+    Write-Host "  All console output is logged to: $ChromeGuardPath\ChromeMonitor.log" -ForegroundColor White
+    Write-Host "  Use this file to debug any issues with the monitoring task." -ForegroundColor White
     Write-Host ""
     Write-Host "Management Commands:" -ForegroundColor Cyan
     Write-Host "  View task:     Get-ScheduledTask -TaskName '$taskName'" -ForegroundColor White
